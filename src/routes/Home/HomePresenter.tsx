@@ -37,7 +37,7 @@ const ExtendedButton = styled(Button)`
   right: 0;
   margin: auto;
   bottom: 50px;
-  z-index: 10;
+  z-index: 2;
   background-color: rgba(0, 0, 0, 0.8);
 `;
 
