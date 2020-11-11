@@ -254,7 +254,7 @@ class HomeContainer extends React.Component<IProps, IState> {
     // console.log("true or false", mapNode === this.mapRef.current)
     const mapNode = this.mapRef.current;
     if (!mapNode) {
-      toast.error("mapNode is not accessed")
+      toast.error("mapNode is not accessed");
     }
     const mapConfig: google.maps.MapOptions = {
       center: {
@@ -386,20 +386,21 @@ class HomeContainer extends React.Component<IProps, IState> {
       this.directions.setMap(null);
     }
     if (!this.directionsService || !this.directions) {
-      toast.error("No direction service or no direction renderer.")
+      toast.error("No direction service or no direction renderer.");
     }
-    
-    const directionsService: google.maps.DirectionsService = this.directionsService!;
+
+    const directionsService: google.maps.DirectionsService = this
+      .directionsService!;
     const from = new google.maps.LatLng(lat, lng);
     const to = new google.maps.LatLng(toLat, toLng);
     // tslint:disable-next-line: no-console
-    console.log("lat lng toLat toLng: ", lat, lng, toLat, toLng)
+    console.log("lat lng toLat toLng: ", lat, lng, toLat, toLng);
     // tslint:disable-next-line: no-console
-    console.log("from: ", from)
+    console.log("from: ", from);
     const directionsOptions: google.maps.DirectionsRequest = {
       destination: to,
       origin: from,
-      travelMode: google.maps.TravelMode.DRIVING,
+      travelMode: google.maps.TravelMode.TRANSIT,
       /* google.maps.TravelMode.DRIVING */
     };
     directionsService.route(directionsOptions, this.handleRouteRequest);
@@ -410,9 +411,9 @@ class HomeContainer extends React.Component<IProps, IState> {
     status: google.maps.DirectionsStatus
   ) => {
     // tslint:disable-next-line: no-console
-    console.log("result: ", result)
+    console.log("result: ", result);
     // tslint:disable-next-line: no-console
-    console.log("status: ", status)
+    console.log("status: ", status);
     const { google } = this.props;
     if (status === google.maps.DirectionsStatus.OK) {
       const { routes } = result;
