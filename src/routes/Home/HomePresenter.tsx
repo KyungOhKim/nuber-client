@@ -115,20 +115,20 @@ const HomePresenter: React.SFC<IProps> = ({
           </MenuButton>
         )}
         {user && !user.isDriving && (
-        <React.Fragment>
-          <AddressBar
-            name="toAddress"
-            onChange={onInputChange}
-            value={toAddress}
-            onBlur={() => ""}
-          />
-          <ExtendedButton
-            onClick={onAddressSubmit}
-            disabled={toAddress === ""}
-            value={price ? "Change address" : "Pick Address"}
-          />
-        </React.Fragment>
-      )}>
+          <React.Fragment>
+            <AddressBar
+              name="toAddress"
+              onChange={onInputChange}
+              value={toAddress}
+              onBlur={() => ""}
+            />
+            <ExtendedButton
+              onClick={onAddressSubmit}
+              disabled={toAddress === ""}
+              value={price ? "Change address" : "Pick Address"}
+            />
+          </React.Fragment>
+        )}
         {!price ? (
           false
         ) : (
