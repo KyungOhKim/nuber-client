@@ -54,9 +54,11 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
       toast.error(`Unexpected error: ${message}`);
     });
   }
-  /* if (networkError) {
-    toast.error(`Network error: ${networkError}`);
-  } */
+  if (networkError) {
+    // toast.error(`Network error: ${networkError}`);
+    // tslint:disable-next-line: no-console
+    console.log("networkError: ", networkError);
+  }
 });
 
 const localStateLink = withClientState({
@@ -70,8 +72,10 @@ const localStateLink = withClientState({
   resolvers: {
     Mutation: {
       logUserIn: (_, { token }, { cache: appCache }) => {
+        // tslint:disable-next-line: no-console
+        console.log("logUserIn token: ", token);
         localStorage.setItem("jwt", token);
-        cache.writeData({
+        appCache.writeData({
           data: {
             auth: {
               __typename: "Auth",
@@ -83,7 +87,7 @@ const localStateLink = withClientState({
       },
       logUserOut: (_, __, { cache: appCache }) => {
         localStorage.removeItem("jwt");
-        cache.writeData({
+        appCache.writeData({
           data: {
             auth: {
               __typename: "Auth",
