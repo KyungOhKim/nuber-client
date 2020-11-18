@@ -29,6 +29,9 @@ class ChatContainer extends React.Component<IProps, IState> {
   public sendMessageMutation:
     | MutationFn<sendMessage, sendMessageVariables>
     | undefined;
+
+  public unsubscribeToGetChat: any | null = null;
+
   constructor(props: IProps) {
     super(props);
     if (!props.match.params.chatId) {
@@ -38,6 +41,15 @@ class ChatContainer extends React.Component<IProps, IState> {
       message: "",
     };
   }
+
+  public componentWillUnmount() {
+    if (!this.unsubscribeToGetChat) {
+      // tslint:disable-next-line: no-console
+      console.log("componentWillUnmount");
+      this.unsubscribeToGetChat();
+    }
+  }
+
   public render() {
     const {
       match: {
@@ -53,42 +65,49 @@ class ChatContainer extends React.Component<IProps, IState> {
             variables={{ chatId: parseInt(chatId, 10) }}
           >
             {({ data: chatData, loading, subscribeToMore }) => {
-              const subscribeToMoreOptions: SubscribeToMoreOptions = {
-                document: SUBSCRIBE_TO_MESSAGES,
-                updateQuery: (prev, { subscriptionData }) => {
-                  if (!subscriptionData.data) {
-                    return prev;
-                  }
-                  const {
-                    data: { MessageSubscription },
-                  } = subscriptionData;
-                  const {
-                    GetChat: {
-                      chat: { messages },
-                    },
-                  } = prev;
-                  const newMessageId = MessageSubscription.id;
-                  const latestMessageId =
-                    messages.length > 0 ? messages[messages.length - 1].id : -1;
-                  if (latestMessageId === newMessageId) {
-                    return prev;
-                  }
-                  const updatedData = Object.assign({}, prev, {
-                    GetChat: {
-                      ...prev.GetChat,
-                      chat: {
-                        ...prev.GetChat.chat,
-                        messages: [
-                          ...prev.GetChat.chat.messages,
-                          subscriptionData.data.MessageSubscription,
-                        ],
+              if (!this.unsubscribeToGetChat) {
+                const subscribeToMoreOptions: SubscribeToMoreOptions = {
+                  document: SUBSCRIBE_TO_MESSAGES,
+                  updateQuery: (prev, { subscriptionData }) => {
+                    if (!subscriptionData.data) {
+                      return prev;
+                    }
+                    // const {
+                    //   data: { MessageSubscription },
+                    // } = subscriptionData;
+                    // const {
+                    //   GetChat: {
+                    //     chat: { messages },
+                    //   },
+                    // } = prev;
+                    // const newMessageId = MessageSubscription.id;
+                    // const latestMessageId =
+                    //   messages.length > 0
+                    //     ? messages[messages.length - 1].id
+                    //     : -1;
+                    // if (latestMessageId === newMessageId) {
+                    //   return prev;
+                    // }
+                    const updatedData = Object.assign({}, prev, {
+                      GetChat: {
+                        ...prev.GetChat,
+                        chat: {
+                          ...prev.GetChat.chat,
+                          messages: [
+                            ...prev.GetChat.chat.messages,
+                            subscriptionData.data.MessageSubscription,
+                          ],
+                        },
                       },
-                    },
-                  });
-                  return updatedData;
-                },
-              };
-              subscribeToMore(subscribeToMoreOptions);
+                    });
+                    return updatedData;
+                  },
+                };
+                this.unsubscribeToGetChat = subscribeToMore(
+                  subscribeToMoreOptions
+                );
+              }
+
               return (
                 <SendMessageMutation mutation={SEND_MESSAGE}>
                   {(sendMessageMutation) => {

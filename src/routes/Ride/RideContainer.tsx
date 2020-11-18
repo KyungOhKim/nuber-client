@@ -26,6 +26,8 @@ class RideUpdate extends Mutation<updateRide, updateRideVariables> {}
 interface IProps extends RouteComponentProps<any> {}
 
 class RideContainer extends React.Component<IProps> {
+  public unsubscribeToGetRide: any | null = null;
+
   constructor(props) {
     super(props);
     const {
@@ -38,6 +40,15 @@ class RideContainer extends React.Component<IProps> {
       history.push("/");
     }
   }
+
+  public componentWillUnmount() {
+    if (!this.unsubscribeToGetRide) {
+      // tslint:disable-next-line: no-console
+      console.log("componentWillUnmount");
+      this.unsubscribeToGetRide();
+    }
+  }
+
   public render() {
     const {
       match: {
@@ -52,23 +63,26 @@ class RideContainer extends React.Component<IProps> {
             variables={{ rideId: parseInt(rideId, 10) }}
           >
             {({ data: rideData, loading, subscribeToMore }) => {
-              const subscribeOptions: SubscribeToMoreOptions = {
-                document: RIDE_SUBSCRIPTION,
-                updateQuery: (prev, { subscriptionData }) => {
-                  if (!subscriptionData.data) {
-                    return prev;
-                  }
-                  const {
-                    data: {
-                      RideStatusSubscription: { status },
-                    },
-                  } = subscriptionData;
-                  if (status === "FINISHED") {
-                    window.location.href = "/";
-                  }
-                },
-              };
-              subscribeToMore(subscribeOptions);
+              if (!this.unsubscribeToGetRide) {
+                const subscribeOptions: SubscribeToMoreOptions = {
+                  document: RIDE_SUBSCRIPTION,
+                  updateQuery: (prev, { subscriptionData }) => {
+                    if (!subscriptionData.data) {
+                      return prev;
+                    }
+                    const {
+                      data: {
+                        RideStatusSubscription: { status },
+                      },
+                    } = subscriptionData;
+                    if (status === "FINISHED") {
+                      window.location.href = "/";
+                    }
+                  },
+                };
+                this.unsubscribeToGetRide = subscribeToMore(subscribeOptions);
+              }
+
               return (
                 <RideUpdate
                   mutation={UPDATE_RIDE_STATUS}
