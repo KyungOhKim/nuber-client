@@ -27,6 +27,7 @@ interface IProps extends RouteComponentProps<any> {}
 
 class RideContainer extends React.Component<IProps> {
   public unsubscribeToGetRide: any | null = null;
+  public subscribeToGetRide: any | null = null;
 
   constructor(props) {
     super(props);
@@ -41,8 +42,30 @@ class RideContainer extends React.Component<IProps> {
     }
   }
 
+  public componentDidMount() {
+    if (this.subscribeToGetRide) {
+      const subscribeOptions: SubscribeToMoreOptions = {
+        document: RIDE_SUBSCRIPTION,
+        updateQuery: (prev, { subscriptionData }) => {
+          if (!subscriptionData.data) {
+            return prev;
+          }
+          const {
+            data: {
+              RideStatusSubscription: { status },
+            },
+          } = subscriptionData;
+          if (status === "FINISHED") {
+            window.location.href = "/";
+          }
+        },
+      };
+      this.unsubscribeToGetRide = this.subscribeToGetRide!(subscribeOptions);
+    }
+  }
+
   public componentWillUnmount() {
-    if (!this.unsubscribeToGetRide) {
+    if (this.unsubscribeToGetRide) {
       // tslint:disable-next-line: no-console
       console.log("componentWillUnmount");
       this.unsubscribeToGetRide();
@@ -63,25 +86,7 @@ class RideContainer extends React.Component<IProps> {
             variables={{ rideId: parseInt(rideId, 10) }}
           >
             {({ data: rideData, loading, subscribeToMore }) => {
-              if (!this.unsubscribeToGetRide) {
-                const subscribeOptions: SubscribeToMoreOptions = {
-                  document: RIDE_SUBSCRIPTION,
-                  updateQuery: (prev, { subscriptionData }) => {
-                    if (!subscriptionData.data) {
-                      return prev;
-                    }
-                    const {
-                      data: {
-                        RideStatusSubscription: { status },
-                      },
-                    } = subscriptionData;
-                    if (status === "FINISHED") {
-                      window.location.href = "/";
-                    }
-                  },
-                };
-                this.unsubscribeToGetRide = subscribeToMore(subscribeOptions);
-              }
+              this.subscribeToGetRide = subscribeToMore;
 
               return (
                 <RideUpdate
