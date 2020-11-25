@@ -66,6 +66,7 @@ class HomeContainer extends React.Component<IProps, IState> {
   public drivers: google.maps.Marker[];
   public directionsService: google.maps.DirectionsService | null = null;
 
+  public subscribeToNearbyRide: any | null = null;
   public unsubscribeToNearbyRide: any | null = null;
 
   public state = {
@@ -94,10 +95,30 @@ class HomeContainer extends React.Component<IProps, IState> {
       this.handleGeoSuccess,
       this.handleGeoError
     );
+    if (this.subscribeToNearbyRide) {
+      const rideSubscriptionOptions: SubscribeToMoreOptions = {
+        document: SUBSCRIBE_NEARBY_RIDE,
+        updateQuery: (prev, { subscriptionData }) => {
+          if (!subscriptionData.data) {
+            return prev;
+          }
+          const updateData = Object.assign({}, prev, {
+            GetNearbyRide: {
+              ...prev.GetNearbyRide,
+              ride: subscriptionData.data.NearbyRideSubscription,
+            },
+          });
+          return updateData;
+        },
+      };
+      this.unsubscribeToNearbyRide = this.subscribeToNearbyRide!(
+        rideSubscriptionOptions
+      );
+    }
   }
 
   public componentWillUnmount() {
-    if (!this.unsubscribeToNearbyRide) {
+    if (this.unsubscribeToNearbyRide) {
       // tslint:disable-next-line: no-console
       console.log("componentWillUnmount");
       this.unsubscribeToNearbyRide();
@@ -147,28 +168,7 @@ class HomeContainer extends React.Component<IProps, IState> {
                   <GetNearbyRides query={GET_NEARBY_RIDE} skip={!isDriving}>
                     {({ subscribeToMore, data: nearbyRide }) => {
                       if (isDriving) {
-                        if (!this.unsubscribeToNearbyRide) {
-                          const rideSubscriptionOptions: SubscribeToMoreOptions = {
-                            document: SUBSCRIBE_NEARBY_RIDE,
-                            updateQuery: (prev, { subscriptionData }) => {
-                              if (!subscriptionData.data) {
-                                return prev;
-                              }
-                              const updateData = Object.assign({}, prev, {
-                                GetNearbyRide: {
-                                  ...prev.GetNearbyRide,
-                                  ride:
-                                    subscriptionData.data
-                                      .NearbyRideSubscription,
-                                },
-                              });
-                              return updateData;
-                            },
-                          };
-                          this.unsubscribeToNearbyRide = subscribeToMore(
-                            rideSubscriptionOptions
-                          );
-                        }
+                        this.subscribeToNearbyRide = subscribeToMore;
                       }
 
                       return (
