@@ -30,8 +30,10 @@ const httpLink = new HttpLink({
 
 const wsLink = new WebSocketLink({
   options: {
-    connectionParams: {
-      "X-JWT": getToken(),
+    connectionParams: async () => {
+      return {
+        "X-JWT": getToken(),
+      };
     },
     reconnect: true,
   },
