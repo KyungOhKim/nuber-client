@@ -31,6 +31,7 @@ class ChatContainer extends React.Component<IProps, IState> {
     | undefined;
 
   public unsubscribeToGetChat: any | null = null;
+  public subscribeToGetChat: any | null = null;
 
   constructor(props: IProps) {
     super(props);
@@ -42,8 +43,38 @@ class ChatContainer extends React.Component<IProps, IState> {
     };
   }
 
+  public componentDidMount() {
+    if (this.subscribeToGetChat) {
+      const subscribeToMoreOptions: SubscribeToMoreOptions = {
+        document: SUBSCRIBE_TO_MESSAGES,
+        updateQuery: (prev, { subscriptionData }) => {
+          if (!subscriptionData.data) {
+            return prev;
+          }
+
+          const updatedData = Object.assign({}, prev, {
+            GetChat: {
+              ...prev.GetChat,
+              chat: {
+                ...prev.GetChat.chat,
+                messages: [
+                  ...prev.GetChat.chat.messages,
+                  subscriptionData.data.MessageSubscription,
+                ],
+              },
+            },
+          });
+          return updatedData;
+        },
+      };
+      this.unsubscribeToGetChat = this.subscribeToGetChat!(
+        subscribeToMoreOptions
+      );
+    }
+  }
+
   public componentWillUnmount() {
-    if (!this.unsubscribeToGetChat) {
+    if (this.unsubscribeToGetChat) {
       // tslint:disable-next-line: no-console
       console.log("componentWillUnmount");
       this.unsubscribeToGetChat();
@@ -65,48 +96,7 @@ class ChatContainer extends React.Component<IProps, IState> {
             variables={{ chatId: parseInt(chatId, 10) }}
           >
             {({ data: chatData, loading, subscribeToMore }) => {
-              if (!this.unsubscribeToGetChat) {
-                const subscribeToMoreOptions: SubscribeToMoreOptions = {
-                  document: SUBSCRIBE_TO_MESSAGES,
-                  updateQuery: (prev, { subscriptionData }) => {
-                    if (!subscriptionData.data) {
-                      return prev;
-                    }
-                    // const {
-                    //   data: { MessageSubscription },
-                    // } = subscriptionData;
-                    // const {
-                    //   GetChat: {
-                    //     chat: { messages },
-                    //   },
-                    // } = prev;
-                    // const newMessageId = MessageSubscription.id;
-                    // const latestMessageId =
-                    //   messages.length > 0
-                    //     ? messages[messages.length - 1].id
-                    //     : -1;
-                    // if (latestMessageId === newMessageId) {
-                    //   return prev;
-                    // }
-                    const updatedData = Object.assign({}, prev, {
-                      GetChat: {
-                        ...prev.GetChat,
-                        chat: {
-                          ...prev.GetChat.chat,
-                          messages: [
-                            ...prev.GetChat.chat.messages,
-                            subscriptionData.data.MessageSubscription,
-                          ],
-                        },
-                      },
-                    });
-                    return updatedData;
-                  },
-                };
-                this.unsubscribeToGetChat = subscribeToMore(
-                  subscribeToMoreOptions
-                );
-              }
+              this.subscribeToGetChat = subscribeToMore;
 
               return (
                 <SendMessageMutation mutation={SEND_MESSAGE}>
