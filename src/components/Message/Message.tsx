@@ -1,12 +1,16 @@
 import React from "react";
-import styled, { withProps } from "../../typed-components";
+import styled from "styled-components";
 
 interface IProps {
   text: string;
   mine: boolean;
 }
 
-const Container = withProps<IProps, HTMLDivElement>(styled.li)`
+interface IPropsStyled {
+  mine: boolean;
+}
+
+const Container = styled.div<IPropsStyled>`
   background-color: ${(props) =>
     props.mine ? props.theme.blueColor : props.theme.greyColor};
   color: white;
